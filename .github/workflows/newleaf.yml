@@ -27,7 +27,7 @@ jobs:
       - name: Prepare
         id: prep
         run: |
-          DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/cloudtube
+          DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/newleaf
           VERSION=latest
           SHORTREF=${{ steps.cloudtube.outputs.git_hash }}
           
