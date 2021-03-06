@@ -4,6 +4,7 @@ name: 'build Cloudtube docker image'
 on:
   schedule:
     - cron:  '0 9 * * *' # Every day at 9
+  workflow_dispatch:
 
 jobs:
   docker:
