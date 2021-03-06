@@ -29,7 +29,7 @@ jobs:
         run: |
           DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/newleaf
           VERSION=latest
-          SHORTREF=${{ steps.cloudtube.outputs.git_hash }}
+          SHORTREF=${{ steps.newleaft.outputs.git_hash }}
           
           TAGS="${DOCKER_IMAGE}:${VERSION},${DOCKER_IMAGE}:${SHORTREF}"
 
