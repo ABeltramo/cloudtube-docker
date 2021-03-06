@@ -1,0 +1,65 @@
+---
+name: 'build Newleaf image'
+
+on:
+  schedule:
+    - cron:  '0 9 * * *' # Every day at 9
+  workflow_dispatch:
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Checkout ~cadence/newleaf
+        id: newleaf
+        run: |
+          git clone https://git.sr.ht/~cadence/NewLeaf
+
+          GIT_HASH=$(cd NewLeaf && git rev-parse --short HEAD)
+          echo ::set-output name=git_hash::${GIT_HASH}
+          
+          cp newleaf.Dockerfile NewLeaf/Dockerfile
+          cp .dockerignore NewLeaf/.dockerignore
+
+      - name: Prepare
+        id: prep
+        run: |
+          DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/cloudtube
+          VERSION=latest
+          SHORTREF=${{ steps.cloudtube.outputs.git_hash }}
+          
+          TAGS="${DOCKER_IMAGE}:${VERSION},${DOCKER_IMAGE}:${SHORTREF}"
+
+
+          # Set output parameters.
+          echo ::set-output name=tags::${TAGS}
+          echo ::set-output name=docker_image::${DOCKER_IMAGE}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./NewLeaf/.
+          platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64
+          push: true
+          tags: ${{ steps.prep.outputs.tags }}
+
