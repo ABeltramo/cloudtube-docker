@@ -4,7 +4,10 @@ WORKDIR /workdir
 
 COPY ./requirements.txt ./requirements.txt
 
-RUN pip install -r requirements.txt
+RUN apk --update-cache add build-base libtool autoconf automake && \
+    pip install -r requirements.txt && \
+    apk del build-base libtool autoconf automake
+    
 
 COPY . .
 
