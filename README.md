@@ -5,11 +5,9 @@
 
 Github actions to build [Cloudtube](https://git.sr.ht/~cadence/cloudtube) and [NewLeaf](https://git.sr.ht/~cadence/NewLeaf) Docker containers.
 
-
-## How to use
-
 A precompiled Docker image is available for both projects, this is a multi-arch image and will run on amd64, aarch64, and armhf devices, including the Raspberry Pi.
-See the instructions on how to run Cloudtube on the [official documentation](https://git.sr.ht/~cadence/tube-docs/tree/main/item/docs).
+
+## Quickstart
 
 ```
 docker run -d \
@@ -27,4 +25,8 @@ docker run -d \
   -v ~/cloudtube/configuration.py:/workdir/configuration.py \
   abeltramo/newleaf:latest
 ```
+
+## How to use
+
+See the [examples](examples) folder for more, including a docker-compose example.
 

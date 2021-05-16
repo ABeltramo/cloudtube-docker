@@ -1,0 +1,21 @@
+version: "3.4"
+
+services:
+  cloudtube:
+    image: abeltramo/cloudtube:latest
+    ports:
+      - 3001:10412
+    depends_on:
+      - newleaf
+    container_name: cloudtube
+    restart: unless-stopped
+    volumes:
+      - ./db:/workdir/db
+      - ./cloudtube.config.js:/workdir/config/config.js #instance should be "http://newleaf:3000"
+
+  newleaf:
+    image: abeltramo/newleaf:latest
+    container_name: newleaf
+    restart: unless-stopped
+    volumes:
+      - ./newleaf-configuration.py:/workdir/configuration.py #set e.g. website_origin = "https://tube.domain.tld" and bind_port = 3000

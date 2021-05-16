@@ -5,6 +5,7 @@
 .vscode
 .idea
 .git
+examples/
 
 # Auto-generated files
 node_modules
