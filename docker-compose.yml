@@ -1,0 +1,78 @@
+version: "3.4"
+
+networks:
+  web:
+    external: true
+  cloudtube-internal:
+    external: false
+
+services:
+  traefik:
+    container_name: traefik
+    restart: always
+    image: traefik:v2.3
+    ports:
+      - 80:80
+      - 443:443
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`traefik.domain.tld`,`www.traefik.domain.tld`)"
+      - "traefik.http.routers.api.service=api@internal"
+      - "traefik.http.routers.api.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=admin:[encrypted password]."
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=myresolver"
+    command:
+      - "--api=true"
+      - "--log.level=INFO"
+      - "--api.insecure=false"
+      - "--api.dashboard=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.watch=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=web"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.email=user@domain.tld"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    environment:
+      - INWX_USERNAME=[username]
+      - INWX_PASSWORD=[password]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /docker/traefik/:/letsencrypt
+    networks:
+      - web
+      - internal
+
+  cloudtube:
+    image: abeltramo/cloudtube:latest
+    container_name: cloudtube
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cloudtube.rule=Host(`tube.domain.tld`,`www.tube.domain.tld`)"
+      - "traefik.http.routers.cloudtube.entrypoints=websecure"
+      - "traefik.http.routers.cloudtube.tls.certresolver=myresolver"
+      - "traefik.http.services.cloudtube.loadbalancer.server.port=10412"
+    volumes:
+      - /docker/cloudtube/db:/workdir/db
+      - /docker/cloudtube/config/config.js:/workdir/config/config.js #instance should be "http://newleaf:3000"
+    networks:
+      - cloudtube-internal
+      - web
+
+  newleaf:
+    image: abeltramo/newleaf:latest
+    container_name: newleaf
+    restart: unless-stopped
+    volumes:
+      - /docker/cloudtube/configuration.py:/workdir/configuration.py #set e.g. website_origin = "https://tube.domain.tld" and bind_port = 3000
+    networks:
+      - cloudtube-internal
