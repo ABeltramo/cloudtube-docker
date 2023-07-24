@@ -30,3 +30,21 @@ docker run -d \
 
 See the [examples](examples) folder for more, including a docker-compose example.
 
+## Building locally
+
+The two Dockerfiles are meant to be run inside the respective git repositories. You'll have to:
+ - clone locally the repo
+ - copy the Dockerfile inside
+ - run `docker build`
+
+Example:
+
+```bash 
+git clone https://git.sr.ht/~cadence/cloudtube
+
+cp cloudtube.Dockerfile cloudtube/Dockerfile
+cp .dockerignore cloudtube/.dockerignore
+
+docker build -t cloudtube cloudtube/.
+```
+
